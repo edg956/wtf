@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/rivo/tview"
 	"github.com/wtfutil/wtf/view"
+	"log"
 )
 
 type imapClient interface {
@@ -32,11 +33,21 @@ type Widget struct {
 
 // NewWidget creates and returns an instance of Widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	imapC, err := newImapClient(settings.imapSettings)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, pages, settings.common),
 
 		settings:   settings,
-		imapClient: newImapClient(nil),
+		imapClient: imapC,
+		pageConfig: &pageConfig{
+			page:     0,
+			pageSize: settings.defaultPageSize,
+		},
 	}
 
 	return &widget
